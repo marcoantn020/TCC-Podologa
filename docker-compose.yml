@@ -1,0 +1,32 @@
+version: '3.3'
+
+services:
+  podologa_mysqldb:
+    image: mysql:5.7
+    container_name: mysql_podologa
+    environment:
+      MYSQL_DATABASE: 'db'
+      MYSQL_ROOT_PASSWORD: 'root'
+    ports:
+     - "3306:3306"
+    volumes:
+      - ./init:/docker-entrypoint-initdb.d
+      - mysqlVolumeTCC:/var/lib/mysql
+      - mysqlConfigTCC:/etc/mysql
+  
+  podologa_python:
+    container_name: python_podologa
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: 'uvicorn src.application.api.server:app --host=0.0.0.0 --port 8000 --reload'
+    ports:
+     - "8000:8000"
+    depends_on:
+     - podologa_mysqldb
+    volumes:
+      - .:/var/www/app/
+
+volumes:
+  mysqlVolumeTCC:
+  mysqlConfigTCC:
